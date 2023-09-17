@@ -30,12 +30,10 @@ is hashset of all X-es of cells, that are occupied by some obstacle and have Y =
 It consumes
 These structures consume `O(sum of obstacles' squares) < O(N^2)`.
 
-- Suppose we have robot with coordinates `(Xr, Yr)`.  When we want to check where are the obstacles relative to robot on 0 (up) and 180 (down) 
-degrees we get upper-bound and lower-bound cells from `self.obstructed_x_to_y[Xr]`. 
-From their coordinates in a grid we deduce their relative position to robot.  Checking obstacles on 90 and 270 is similar, except that we check for upper and lower bounds
+- Suppose we have robot with coordinates `(Xr, Yr)`.  When we want to check where are the obstacles relative to robot on 0 (up) and 180 (down) degrees we get upper-bound and lower-bound cells from `self.obstructed_x_to_y[Xr]`. From their coordinates in a grid we deduce their relative position to robot.  Checking obstacles on 90 and 270 is similar, except that we check for upper and lower bounds
 in `self.obstructed_y_to_x`.
 
-As dictionary (hashset) works in `O(1)`, in found array we do binary search in `O(log N)`. We get answer for the query for `O(log N)` in total.
+- As dictionary (hashset) works in `O(1)`, in found array we do binary search in `O(log N)`. We get answer for the query for `O(log N)` in total.
 
 - That algorithm is used in online version, when amount of planned updates of robot positions `rp` is such that: `(sum of obstacles' squares) + rp * log2(N) < rp * len(obstacles)`.
 
