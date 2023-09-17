@@ -64,7 +64,6 @@ class Map(ABC):
         self.obstacles = obstacles
         self.robot_x = -1
         self.robot_y = -1
-        self.respond = None
 
     def robot_positioned(self):
         return self.robot_x >= 0 and self.robot_y >= 0
@@ -92,7 +91,6 @@ class Map(ABC):
             raise ValueError("Can't put robot in the obstructed cell.")
         self.robot_x = x
         self.robot_y = y
-        self.respond = None
 
     @abstractmethod
     def get_obstacles_positions(self):
@@ -122,45 +120,45 @@ class Map1(Map):
                     if j not in self.obstructed_x_to_y:
                         self.obstructed_x_to_y[j] = []
                     self.obstructed_x_to_y[j].append(i)
-        [i.sort() for i in self.obstructed_x_to_y.values()]
-        [i.sort() for i in self.obstructed_y_to_x.values()]
+        for key, value in self.obstructed_x_to_y.items():
+            self.obstructed_x_to_y[key] = sorted(set(value))
+        for key, value in self.obstructed_y_to_x.items():
+            self.obstructed_y_to_x[key] = sorted(set(value))
 
     def cell_obstructed(self, x, y):
         if x in self.obstructed_x_to_y:
-            ind = bisect.bisect_left(self.obstructed_x_to_y[x], self.robot_y)
-            if self.obstructed_x_to_y[x][ind] == y:
+            ind = bisect.bisect_left(self.obstructed_x_to_y[x], y)
+            if ind < len(self.obstructed_x_to_y[x]) and self.obstructed_x_to_y[x][ind] == y:
                 return True
         return False
 
     def get_obstacles_positions(self):
         super().get_obstacles_positions()
-        if self.respond is not None:
-            return self.respond
-        grid_crds = [[self.robot_x, -1],  # up = 0
-                     [-1, self.robot_y],  # left = 90
-                     [self.robot_x, self.n],  # down = 180
-                     [self.n, self.robot_y]]  # right = 270
+        grid_crds = {"up": [self.robot_x, -1],
+                     "left": [-1, self.robot_y],
+                     "down": [self.robot_x, self.n],
+                     "right": [self.n, self.robot_y]}
         if self.robot_x in self.obstructed_x_to_y:
             current_x_col = self.obstructed_x_to_y[self.robot_x]
-            y_index = bisect.bisect_left(current_x_col, self.robot_x)
+            y_index = bisect.bisect_left(current_x_col, self.robot_y)
             if y_index > 0:
                 up_y = current_x_col[y_index - 1]
-                grid_crds[0][1] = up_y
+                grid_crds["up"][1] = up_y
 
             if y_index < len(current_x_col):
                 down_y = current_x_col[y_index]
-                grid_crds[2][1] = down_y
+                grid_crds["down"][1] = down_y
 
         if self.robot_y in self.obstructed_y_to_x:
             current_y_row = self.obstructed_y_to_x[self.robot_y]
             x_index = bisect.bisect_left(current_y_row, self.robot_x)
             if x_index > 0:
                 left_x = current_y_row[x_index - 1]
-                grid_crds[1][0] = left_x
+                grid_crds["left"][0] = left_x
 
             if x_index < len(current_y_row):
                 right_x = current_y_row[x_index]
-                grid_crds[3][0] = right_x
+                grid_crds["right"][0] = right_x
 
         return grid_crds
 
@@ -182,22 +180,19 @@ class Map2(Map):
 
     def get_obstacles_positions(self):
         super().get_obstacles_positions()
-        if self.respond is not None:
-            return self.respond
-        grid_crds = [[self.robot_x, -1],  # up = 0
-                     [-1, self.robot_y],  # left = 90
-                     [self.robot_x, self.n],  # down = 180
-                     [self.n, self.robot_y]]  # right = 270
+        grid_crds = {"up": [self.robot_x, -1],
+                     "left": [-1, self.robot_y],
+                     "down": [self.robot_x, self.n],
+                     "right": [self.n, self.robot_y]}
         for obstacle in self.obstacles:
             if obstacle.intersects_x_col(self.robot_x):
                 if obstacle.y[1] < self.robot_y:
-                    grid_crds[0][1] = max(grid_crds[0][1], obstacle.y[1] - 1)
+                    grid_crds["up"][1] = max(grid_crds["up"][1], obstacle.y[1] - 1)
                 if obstacle.y[0] > self.robot_y:
-                    grid_crds[2][1] = min(grid_crds[2][1], obstacle.y[0])
+                    grid_crds["down"][1] = min(grid_crds["down"][1], obstacle.y[0])
             elif obstacle.intersects_y_row(self.robot_y):
                 if obstacle.x[1] < self.robot_x:
-                    grid_crds[1][0] = max(obstacle.x[1] - 1, grid_crds[1][0])
+                    grid_crds["left"][0] = max(obstacle.x[1] - 1, grid_crds["left"][0])
                 if obstacle.x[0] > self.robot_x:
-                    grid_crds[3][0] = min(obstacle.x[0], grid_crds[3][0])
-        self.respond = grid_crds
+                    grid_crds["right"][0] = min(obstacle.x[0], grid_crds["right"][0])
         return grid_crds

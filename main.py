@@ -1,4 +1,4 @@
-import map
+import map as mp
 from math import log2
 from draw_map import *
 
@@ -10,24 +10,16 @@ def convert_coords_to_rectangle(coordinates, map_size):
     return rectangle
 
 
-def format_obstacles_positions(obst_crds, cell_size):
-    """
-    :param obst_crds: 4 pairs of obstacle coordinates: up-left-down-right
-    :param float cell_size: Cell size
-    """
-    obst_crds[0][0] += 0.5
-    obst_crds[0][1] += 1
+def format_obstacles_positions(obst_crds):
+    obst_crds["up"][0] += 0.5
+    obst_crds["up"][1] += 1
 
-    obst_crds[1][0] += 1
-    obst_crds[1][1] += 0.5
+    obst_crds["left"][0] += 1
+    obst_crds["left"][1] += 0.5
 
-    obst_crds[2][0] += 0.5
+    obst_crds["down"][0] += 0.5
 
-    obst_crds[3][1] += 0.5
-
-    for i in range(len(obst_crds)):
-        obst_crds[i][0] *= cell_size
-        obst_crds[i][1] *= cell_size
+    obst_crds["right"][1] += 0.5
 
 
 if __name__ == '__main__':
@@ -70,13 +62,13 @@ if __name__ == '__main__':
         rp = 1  # Approximate number of positions that robot will pass
         try:
             rp = int(
-                input("Please, enter approximate amount of positions that your robot to change or just press Enter"))
+                input("Please, enter approximate amount of positions that your robot to change or just press Enter: "))
         except ValueError:
             pass
 
         robot_map = mp.Map2(n, obstacles)
-        # if sum_obst_squares + rp * log2(n) < rp * len(obstacles):
-        #     robot_map = mp.Map1(n, obstacles)
+        if sum_obst_squares + rp * log2(n) < rp * len(obstacles):
+            robot_map = mp.Map1(n, obstacles)
 
         while True:
             try:
@@ -92,8 +84,14 @@ if __name__ == '__main__':
 
             try:
                 obstacles_coords = robot_map.get_obstacles_positions()
-                format_obstacles_positions(obstacles_coords, s)
-                print(obstacles_coords)
+                format_obstacles_positions(obstacles_coords)
+                print("Obstacles coordinates in grid coordinates (independent on cell size): ")
+                for key, value in obstacles_coords.items():
+                    print(f"({key}: {value[0]}, {value[1]})")
+
+                print("Obstacles coordinates dependent on cell size: ")
+                for key, value in obstacles_coords.items():
+                    print(f"({key}: {value[0] * s}, {value[1] * s})")
                 draw_map(robot_map, s, obstacles_coords)
             except ValueError as e:
                 print(e)

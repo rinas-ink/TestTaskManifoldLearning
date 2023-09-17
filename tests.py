@@ -1,5 +1,6 @@
 import unittest
 import map as mp
+import random
 
 
 class TestRectangle(unittest.TestCase):
@@ -49,19 +50,6 @@ class TestRectangle(unittest.TestCase):
 
 
 class MapTest(unittest.TestCase):
-
-    def test_map1_check_obstructed(self):
-        self.check_obstructed(mp.Map1)
-
-    def test_map2_check_obstructed(self):
-        self.check_obstructed(mp.Map2)
-
-    def test_map1_regular_situation(self):
-        self.regular_situation(mp.Map1)
-
-    def test_map2_regular_situation(self):
-        self.regular_situation(mp.Map2)
-
     def check_obstructed(self, map_constructor):
         n = 5
         rectangles = [mp.Rectangle(0, 0, 5, 2),
@@ -88,21 +76,76 @@ class MapTest(unittest.TestCase):
                       mp.Rectangle(5, 5, 4, 4)]
         m = map_constructor(n, rectangles)
         self.assertEqual(m.robot_positioned(), False)
-        m.position_robot(3, 4)
-        obstacle_pos = m.get_obstacles_positions()
-        self.assertEqual(obstacle_pos, [[4, 1], [1, 3], [4, 4], [5, 3]])
-
-        # with self.assertRaises(ValueError):
-        #     m1.position_robot(1, 1)
+        m.position_robot(4, 3)
         for i in range(2):
             obstacle_pos = m.get_obstacles_positions()
-            self.assertEqual(obstacle_pos, [[4, 1], [1, 3], [4, 4], [5, 3]])
+            self.assertEqual(list(obstacle_pos.values()), [[4, 1], [1, 3], [4, 4], [5, 3]])
 
-    def test_maps_errors(self):
-        pass
+        rectangles = [mp.Rectangle(0, 0, 5, 1),
+                      mp.Rectangle(0, 3, 5, 4)]
+        m = map_constructor(n, rectangles)
+        self.assertEqual(m.robot_positioned(), False)
+        m.position_robot(1, 2)
+        obstacle_pos = m.get_obstacles_positions()
+        self.assertEqual(list(obstacle_pos.values()), [[1, 0], [-1, 2], [1, 3], [5, 2]])
 
-    def create_map(self, n, rectangles):
-        pass
+    def error_robot_positioning(self, map_constructor):
+        n = 5
+        rectangles = [mp.Rectangle(0, 0, 5, 2),
+                      mp.Rectangle(0, 5, 2, 0),
+                      mp.Rectangle(5, 5, 4, 4)]
+        m = map_constructor(n, rectangles)
+        self.assertEqual(m.robot_positioned(), False)
+        with self.assertRaises(ValueError):
+            m.position_robot(1, 1)
+        with self.assertRaises(ValueError):
+            m.position_robot(4, 4)
+        with self.assertRaises(ValueError):
+            m.position_robot(4, 1)
+        with self.assertRaises(ValueError):
+            m.position_robot(5, 1)
+        with self.assertRaises(ValueError):
+            m.position_robot(-1, 1)
+        with self.assertRaises(ValueError):
+            m.position_robot(-1, -10)
+        with self.assertRaises(ValueError):
+            m.position_robot(7, -3)
+
+    def big_numbers(self, map_constructor):
+        n = 5000
+        rectangles = []
+        for i in range(100):
+            rectangles.append(mp.Rectangle(0, 50 * i, n, 50 * i + 15))
+        m = map_constructor(n, rectangles)
+        for i in range(100):
+            m.position_robot(50 * i, 50 * i + 20)
+            obstacle_pos = m.get_obstacles_positions()
+            self.assertEqual(list(obstacle_pos.values()),
+                             [[50 * i, 50 * i + 14], [-1, 50 * i + 20], [50 * i, 50 * (i + 1)], [n, 50 * i + 20]])
+
+    def test_map1_check_obstructed(self):
+        self.check_obstructed(mp.Map1)
+
+    def test_map2_check_obstructed(self):
+        self.check_obstructed(mp.Map2)
+
+    def test_map1_regular_situation(self):
+        self.regular_situation(mp.Map1)
+
+    def test_map2_regular_situation(self):
+        self.regular_situation(mp.Map2)
+
+    def test_map1_error_robot_positioning(self):
+        self.error_robot_positioning(mp.Map1)
+
+    def test_map2_error_robot_positioning(self):
+        self.error_robot_positioning(mp.Map2)
+
+    def test_map1_big_numbers(self):
+        self.big_numbers(mp.Map1)
+
+    def test_map2_big_numbers(self):
+        self.big_numbers(mp.Map2)
 
 
 if __name__ == '__main__':
