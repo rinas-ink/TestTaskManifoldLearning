@@ -1,6 +1,7 @@
 ## How to run
 1. Run `docker build --tag <your tag> .`
 2. Run `docker run -it -v <path to folder where you want to see saved images>:/app/output <your tag>`. It's very important to run in interactive mode and with host folder mounted to docker container. Matplotlib image with map will be saved to that folder.
+3. Tests doesn't have any dependencies, except internal (map.py) and can be run without docker if needed.
 
 ## Some assumptions
 
@@ -8,7 +9,6 @@
 - Rectangle's square must be > 0.
 - Robot can't be on obstacle.
 - For current obstacles' position various robot's positions can be given. It turned out that this wasn't required, but it was already implemented and I didn't want to remove it.
-
 
 ## Algorithm Description
 
