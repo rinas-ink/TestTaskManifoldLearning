@@ -66,11 +66,12 @@ if __name__ == '__main__':
         except ValueError:
             pass
 
-        robot_map = mp.Map2(n, obstacles)
+        robot_map = mp.Map1(n, obstacles)
         if sum_obst_squares + rp * log2(n) < rp * len(obstacles):
-            robot_map = mp.Map1(n, obstacles)
+            robot_map = mp.Map2(n, obstacles)
 
         while True:
+            draw_map(robot_map, s)
             try:
                 robot_x, robot_y = [int(i) for i in
                                     input("Please enter 2 robot coordinates x, y divided by space: ").split()]
@@ -92,6 +93,5 @@ if __name__ == '__main__':
                 print("Obstacles coordinates dependent on cell size: ")
                 for key, value in obstacles_coords.items():
                     print(f"({key}: {value[0] * s}, {value[1] * s})")
-                draw_map(robot_map, s, obstacles_coords)
             except ValueError as e:
                 print(e)

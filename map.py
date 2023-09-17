@@ -101,10 +101,45 @@ class Map(ABC):
 class Map1(Map):
     """
     In this realisation:
+    Getting information about obstacles near robot works in O(obstacle_amount).
+    Initializing of map works in O(obstacle_amount) < O(N^2).
+    Map consumes O(obstacle_amount) < O(N^2) memory.
+    """
+
+    def cell_obstructed(self, x, y):
+        for obstacle in self.obstacles:
+            if obstacle.is_cell_in_rectangle(x, y):
+                return True
+        return False
+
+    def get_obstacles_positions(self):
+        super().get_obstacles_positions()
+        grid_crds = {"up": [self.robot_x, -1],
+                     "left": [-1, self.robot_y],
+                     "down": [self.robot_x, self.n],
+                     "right": [self.n, self.robot_y]}
+        for obstacle in self.obstacles:
+            if obstacle.intersects_x_col(self.robot_x):
+                if obstacle.y[1] < self.robot_y:
+                    grid_crds["up"][1] = max(grid_crds["up"][1], obstacle.y[1] - 1)
+                if obstacle.y[0] > self.robot_y:
+                    grid_crds["down"][1] = min(grid_crds["down"][1], obstacle.y[0])
+            elif obstacle.intersects_y_row(self.robot_y):
+                if obstacle.x[1] < self.robot_x:
+                    grid_crds["left"][0] = max(obstacle.x[1] - 1, grid_crds["left"][0])
+                if obstacle.x[0] > self.robot_x:
+                    grid_crds["right"][0] = min(obstacle.x[0], grid_crds["right"][0])
+        return grid_crds
+
+
+class Map2(Map):
+    """
+    In this realisation:
     Getting information about obstacles near robot works in O(log N).
     Initializing of map works in O(sum_of_obstacles_squares) < O(N^2).
     Map consumes O(sum_of_obstacles_squares) < O(N^2) memory.
-    Better to use if log N << amount of obstacles.
+    Might be useful in online version, when
+    sum_obst_squares + amount_of_updates * log2(n) < amount_of_updates * obstacles_amount
     """
 
     def __init__(self, n, obstacles):
@@ -160,39 +195,4 @@ class Map1(Map):
                 right_x = current_y_row[x_index]
                 grid_crds["right"][0] = right_x
 
-        return grid_crds
-
-
-class Map2(Map):
-    """
-    In this realisation:
-    Getting information about obstacles near robot works in O(obstacle_amount).
-    Initializing of map works in O(obstacle_amount) < O(N^2).
-    Map consumes O(obstacle_amount) < O(N^2) memory.
-    Better to use if log N >= amount of obstacles
-    """
-
-    def cell_obstructed(self, x, y):
-        for obstacle in self.obstacles:
-            if obstacle.is_cell_in_rectangle(x, y):
-                return True
-        return False
-
-    def get_obstacles_positions(self):
-        super().get_obstacles_positions()
-        grid_crds = {"up": [self.robot_x, -1],
-                     "left": [-1, self.robot_y],
-                     "down": [self.robot_x, self.n],
-                     "right": [self.n, self.robot_y]}
-        for obstacle in self.obstacles:
-            if obstacle.intersects_x_col(self.robot_x):
-                if obstacle.y[1] < self.robot_y:
-                    grid_crds["up"][1] = max(grid_crds["up"][1], obstacle.y[1] - 1)
-                if obstacle.y[0] > self.robot_y:
-                    grid_crds["down"][1] = min(grid_crds["down"][1], obstacle.y[0])
-            elif obstacle.intersects_y_row(self.robot_y):
-                if obstacle.x[1] < self.robot_x:
-                    grid_crds["left"][0] = max(obstacle.x[1] - 1, grid_crds["left"][0])
-                if obstacle.x[0] > self.robot_x:
-                    grid_crds["right"][0] = min(obstacle.x[0], grid_crds["right"][0])
         return grid_crds

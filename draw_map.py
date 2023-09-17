@@ -50,3 +50,7 @@ def draw_map(robot_map, s, obstacles_coords=None):
     ax.set_ylabel(f"Y (cell index)")
 
     plt.show()
+    try:
+        plt.savefig("/app/output/map.png")
+    except Exception:
+        print("Picture isn't saved")
