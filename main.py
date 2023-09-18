@@ -73,9 +73,12 @@ if __name__ == '__main__':
         while True:
             draw_map(robot_map, s)
             try:
-                robot_x, robot_y = [int(i) for i in
-                                    input("Please enter 2 robot coordinates x, y divided by space: ").split()]
-                robot_map.position_robot(robot_x, robot_y)
+                crds = [int(i) for i in
+                        input("Please enter 2 robot coordinates x, y divided by space. "
+                              "If you want to finish press Enter: ").split()]
+                if len(crds) == 0:
+                    break
+                robot_map.position_robot(*crds)
             except ValueError as e:
                 print(e)
                 continue
